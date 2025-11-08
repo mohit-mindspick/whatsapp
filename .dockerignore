@@ -1,0 +1,36 @@
+# Build output
+build/classes/
+build/generated/
+build/tmp/
+build/resources/
+target/
+*.class
+# Exclude plain JAR but allow executable JAR
+build/libs/*-plain.jar
+*.war
+
+# Gradle
+.gradle/
+gradle-wrapper.jar
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.classpath
+.project
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Git
+.git/
+.gitignore
+
