@@ -45,15 +45,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     io.jsonwebtoken.Claims claims = jwtUtil.extractAllClaims(token);
                     String username = claims.getSubject();
 
-                    // Extract tenant ID from JWT and add to headers if not present
+                    // Extract tenant ID from JWT and validate/add to headers
                     String tenantId = jwtUtil.extractTenantId(token);
                     if (tenantId != null && !tenantId.isEmpty()) {
                         String existingTenantId = request.getHeader("X-Tenant-Id");
-                        if (existingTenantId == null || existingTenantId.isEmpty()) {
+                        if (existingTenantId != null && !existingTenantId.isEmpty()) {
+                            // Validate: If X-Tenant-Id is present, it must match the token's tenantId
+                            if (!tenantId.equals(existingTenantId)) {
+                                log.warn("Tenant ID mismatch: Header X-Tenant-Id={} does not match token tenantId={}", 
+                                        existingTenantId, tenantId);
+                                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                                response.getWriter().write("{\"error\":\"Tenant ID mismatch\"}");
+                                return;
+                            }
+                            log.debug("X-Tenant-Id header validated: {}", existingTenantId);
+                        } else {
+                            // If X-Tenant-Id is null, extract from token and set in header
                             requestWrapper.addHeader("X-Tenant-Id", tenantId);
                             log.debug("Added X-Tenant-Id header from JWT: {}", tenantId);
-                        } else {
-                            log.debug("X-Tenant-Id header already present: {}", existingTenantId);
                         }
                     }
 
@@ -83,7 +92,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     // Set authentication in security context
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                     
-                    log.debug("JWT authentication successful for user: {}", username);
+                    log.debug("JWT authentication successful for user: {} with tenant: {}", username, tenantId);
                 } else {
                     log.debug("Invalid JWT token provided");
                 }
@@ -94,8 +103,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.clearContext();
         }
         
-        // Continue with the filter chain
-        filterChain.doFilter(request, response);
+        // Continue with the filter chain using the wrapper
+        filterChain.doFilter(requestWrapper, response);
     }
 
     @Override

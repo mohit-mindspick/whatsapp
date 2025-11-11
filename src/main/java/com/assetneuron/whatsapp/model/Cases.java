@@ -53,7 +53,7 @@ public class Cases extends BaseEntity {
     private String locationPath;
 
     @Column(name = "asset_id", length = 100)
-    private String assetId;
+    private UUID assetId;
 
     @Column(name = "asset_name", length = 500)
     private String assetName;

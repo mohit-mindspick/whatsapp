@@ -68,8 +68,8 @@ public class WorkOrder extends BaseEntity {
     @Column(name = "due_date")
     private LocalDateTime dueDate;
 
-    @Column(name = "asset_id", length = 50, nullable = false)
-    private String assetId;
+    @Column(name = "asset_id", columnDefinition = "UUID", nullable = false)
+    private UUID assetId;
 
     @Column(name = "location_id", length = 50)
     private String locationId;

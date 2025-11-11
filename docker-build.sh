@@ -39,9 +39,13 @@ if [ "$1" = "--ecr" ]; then
     echo "ECR image tagged successfully!"
     echo "ECR image: $ECR_IMAGE"
     echo ""
-    echo "To push to ECR:"
-    echo "  aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin $ECR_REGISTRY"
-    echo "  docker push $ECR_IMAGE"
+    echo "Step 4: Logging in to ECR..."
+    aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin $ECR_REGISTRY
+    
+    echo "Step 5: Pushing image to ECR..."
+    docker push $ECR_IMAGE
+    
+    echo "Image pushed to ECR successfully!"
     echo ""
 fi
 
