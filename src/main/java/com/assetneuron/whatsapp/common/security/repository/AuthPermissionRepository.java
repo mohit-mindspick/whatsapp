@@ -28,3 +28,4 @@ public interface AuthPermissionRepository extends JpaRepository<AuthPermission, 
     List<AuthPermission> findByDescriptionContainingIgnoreCase(String description);
 }
 
+

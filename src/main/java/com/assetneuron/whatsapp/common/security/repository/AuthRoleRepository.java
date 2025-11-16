@@ -48,3 +48,4 @@ public interface AuthRoleRepository extends JpaRepository<AuthRole, UUID> {
     List<AuthRole> findByCodeInAndTenantIdAndActiveTrue(List<String> codes, UUID tenantId);
 }
 
+
