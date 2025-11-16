@@ -1,11 +1,13 @@
 package com.assetneuron.whatsapp.common.security;
 
+import com.assetneuron.whatsapp.common.security.service.RolePermissionService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -18,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -25,6 +28,10 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final RolePermissionService rolePermissionService;
+
+    @Value("${authorization.skip:false}")
+    private boolean authorizationSkip;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, 
@@ -66,23 +73,51 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         }
                     }
 
-                    // Extract roles and permissions from JWT claims
+                    // Extract roles from JWT claims
                     @SuppressWarnings("unchecked")
                     List<String> roles = claims.get("roles", List.class);
-                    @SuppressWarnings("unchecked")
-                    List<String> permissions = claims.get("permissions", List.class);
                     
-                    // Create authorities from JWT claims
+                    // Create authorities collection
                     Collection<GrantedAuthority> authorities = new ArrayList<>();
                     
-                    if (roles != null) {
+                    // Add role authorities
+                    if (roles != null && !roles.isEmpty()) {
                         roles.forEach(role -> 
                             authorities.add(new SimpleGrantedAuthority("ROLE_" + role)));
                     }
                     
-                    if (permissions != null) {
-                        permissions.forEach(permission -> 
-                            authorities.add(new SimpleGrantedAuthority(permission)));
+                    // Check if authorization skip is enabled
+                    if (authorizationSkip) {
+                        // Skip authorization check - add all available permissions in the system
+                        log.debug("Authorization skip is enabled - adding all system permissions");
+                        Set<String> allPermissions = rolePermissionService.getAllPermissions();
+                        if (allPermissions != null && !allPermissions.isEmpty()) {
+                            allPermissions.forEach(permission -> 
+                                authorities.add(new SimpleGrantedAuthority(permission)));
+                            log.debug("Added {} system permissions to authorities", allPermissions.size());
+                        }
+                    } else {
+                        // Normal flow: fetch permissions mapped to roles from database
+                        if (roles != null && !roles.isEmpty()) {
+                            Set<String> permissionsFromRoles = rolePermissionService.getPermissionsForRoles(roles, tenantId);
+                            
+                            if (permissionsFromRoles != null && !permissionsFromRoles.isEmpty()) {
+                                log.debug("Fetched {} permissions from database for roles: {}", 
+                                        permissionsFromRoles.size(), roles);
+                                permissionsFromRoles.forEach(permission -> 
+                                    authorities.add(new SimpleGrantedAuthority(permission)));
+                            } else {
+                                log.debug("No permissions found for roles: {}", roles);
+                            }
+                        }
+                        
+                        // Also include any permissions directly in JWT (for backward compatibility)
+                        @SuppressWarnings("unchecked")
+                        List<String> jwtPermissions = claims.get("permissions", List.class);
+                        if (jwtPermissions != null && !jwtPermissions.isEmpty()) {
+                            jwtPermissions.forEach(permission -> 
+                                authorities.add(new SimpleGrantedAuthority(permission)));
+                        }
                     }
                     
                     // Create authentication object
@@ -111,16 +146,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
         
-        // Skip JWT filter for public endpoints
-        return path.startsWith("/api/auth/login") ||
-               path.startsWith("/api/auth/health") ||
-               path.startsWith("/api/auth/test") ||
-               path.startsWith("/api/events") ||
+        // Skip JWT filter for public endpoints - whatsapp specific paths
+        return path.startsWith("/api/v1/events") ||
                path.startsWith("/actuator") ||
                path.startsWith("/swagger-ui") ||
                path.startsWith("/v3/api-docs") ||
-               path.startsWith("/api/v1/whatsapp/health") ||
-               path.startsWith("/whatsapp/health");
+               path.startsWith("/api/v1/whatsapp/health");
     }
 }
 

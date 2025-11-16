@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,6 +42,7 @@ public class WorkOrderController {
     private final WorkItemService workItemService;
 
     @GetMapping("/viewmywork")
+    @PreAuthorize("@authConfig.isSecurityEnabled() ? hasAuthority('WHATSAPP_WORKORDER_READ') : true")
     public ResponseEntity<ApiResponse<List<MyWorkDTO>>> viewMyWork(
             @RequestParam("phoneNumber") String phoneNumber,
             @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
@@ -73,6 +75,7 @@ public class WorkOrderController {
     }
 
     @GetMapping("/detail")
+    @PreAuthorize("@authConfig.isSecurityEnabled() ? hasAuthority('WHATSAPP_WORKORDER_READ') : true")
     public ResponseEntity<ApiResponse<WorkItemDetailDTO>> getWorkOrderDetail(
             @RequestParam("phoneNumber") String phoneNumber,
             @RequestParam("workItemId") UUID workItemId,
@@ -113,6 +116,7 @@ public class WorkOrderController {
     }
 
     @GetMapping("/{workItemId}/tasks")
+    @PreAuthorize("@authConfig.isSecurityEnabled() ? hasAuthority('WHATSAPP_WORKORDER_READ') : true")
     public ResponseEntity<ApiResponse<WorkItemTasksResponseDTO>> getWorkItemTasks(
             @PathVariable UUID workItemId,
             @RequestHeader(value = "X-Tenant-Id", required = true) UUID tenantId,
@@ -137,6 +141,7 @@ public class WorkOrderController {
     }
 
     @PostMapping("/log-hours")
+    @PreAuthorize("@authConfig.isSecurityEnabled() ? hasAuthority('WHATSAPP_WORKORDER_UPDATE') : true")
     public ResponseEntity<ApiResponse<Void>> logHours(
             @Valid @RequestBody LogHoursRequest request,
             @RequestHeader(value = "X-Tenant-Id", required = true) UUID tenantId,

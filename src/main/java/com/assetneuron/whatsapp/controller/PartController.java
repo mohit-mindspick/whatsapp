@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,6 +36,7 @@ public class PartController {
     private final PartService partService;
 
     @GetMapping("/workorder/{workOrderId}")
+    @PreAuthorize("@authConfig.isSecurityEnabled() ? hasAuthority('WHATSAPP_PART_READ') : true")
     public ResponseEntity<ApiResponse<List<PartDTO>>> getWorkOrderParts(
             @PathVariable UUID workOrderId,
             @RequestHeader(value = "X-Tenant-Id", required = true) UUID tenantId,
@@ -59,6 +61,7 @@ public class PartController {
     }
 
     @PutMapping("/workorder/{workOrderId}")
+    @PreAuthorize("@authConfig.isSecurityEnabled() ? hasAuthority('WHATSAPP_PART_UPDATE') : true")
     public ResponseEntity<ApiResponse<Void>> updateWorkOrderParts(
             @PathVariable UUID workOrderId,
             @Valid @RequestBody List<PartDTO> parts,
@@ -83,6 +86,7 @@ public class PartController {
     }
 
     @PostMapping("/return")
+    @PreAuthorize("@authConfig.isSecurityEnabled() ? hasAuthority('WHATSAPP_PART_UPDATE') : true")
     public ResponseEntity<ApiResponse<Void>> returnPart(
             @Valid @RequestBody ReturnPartRequest request,
             @RequestHeader(value = "X-Tenant-Id", required = true) UUID tenantId,
