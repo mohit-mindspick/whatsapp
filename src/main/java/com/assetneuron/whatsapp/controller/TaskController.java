@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,6 +30,7 @@ public class TaskController {
     private final TaskService taskService;
 
     @GetMapping("/workorder/{workOrderId}/task/{taskId}/checklist")
+    @PreAuthorize("@authConfig.isSecurityEnabled() ? hasAuthority('WHATSAPP_TASK_READ') : true")
     public ResponseEntity<ApiResponse<TaskChecklistResponseDTO>> getTaskChecklistItems(
             @PathVariable UUID workOrderId,
             @PathVariable UUID taskId,

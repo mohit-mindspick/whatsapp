@@ -17,7 +17,7 @@ import java.util.HashMap;
 
 @Configuration
 @EnableJpaRepositories(
-    basePackages = "com.assetneuron.whatsapp.repository",
+    basePackages = {"com.assetneuron.whatsapp.repository", "com.assetneuron.whatsapp.common.security.repository"},
     entityManagerFactoryRef = "entityManagerFactory",
     transactionManagerRef = "transactionManager"
 )
@@ -43,7 +43,7 @@ public class JpaConfig {
 
         return builder
                 .dataSource(dataSource)
-                .packages("com.assetneuron.whatsapp.model")
+                .packages("com.assetneuron.whatsapp.model", "com.assetneuron.whatsapp.common.security.model")
                 .persistenceUnit("whatsapp")
                 .properties(jpaProperties)
                 .build();

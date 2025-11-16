@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,6 +31,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/by-phone")
+    @PreAuthorize("@authConfig.isSecurityEnabled() ? hasAuthority('WHATSAPP_USER_READ') : true")
     public ResponseEntity<ApiResponse<UserDTO>> getUserByPhoneNumber(
             @RequestParam("phoneNumber") String phoneNumber,
             @RequestHeader(value = "X-Tenant-Id", required = true) UUID tenantId,
@@ -61,6 +63,7 @@ public class UserController {
     }
 
     @GetMapping("/supervisor/by-phone")
+    @PreAuthorize("@authConfig.isSecurityEnabled() ? hasAuthority('WHATSAPP_USER_READ') : true")
     public ResponseEntity<ApiResponse<SupervisorDTO>> getSupervisorByPhoneNumber(
             @RequestParam("phoneNumber") String phoneNumber,
             @RequestHeader(value = "X-Tenant-Id", required = true) UUID tenantId,
