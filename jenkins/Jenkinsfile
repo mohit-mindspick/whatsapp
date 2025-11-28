@@ -1,0 +1,166 @@
+pipeline {
+  agent any
+  options {
+    buildDiscarder(logRotator(numToKeepStr: '50'))
+    timestamps()
+  }
+
+  parameters {
+    booleanParam(name: 'BUILD_PUSH_ONLY', defaultValue: false, description: 'If true, pipeline will only build & push image. Deployment stages will be skipped.')
+  }
+
+  environment {
+    REPO_URL = 'https://github.com/mohit-mindspick/whatsapp.git'
+    GIT_CRED = 'github-pat'
+    AWS_REGION = 'ap-south-1'         // fallback only
+    BUILD_SCRIPT = 'jenkins/build.sh'
+    PUSH_SCRIPT  = 'jenkins/push-image.sh'
+    ECS_SCRIPT   = 'jenkins/ecs-deploy.sh'
+    SVC_NAME = 'whatsapp'
+  }
+
+  stages {
+
+    stage('Checkout') {
+      steps {
+        script {
+          if (!env.BRANCH_NAME) { error "Multibranch pipeline required." }
+          env.EFFECTIVE_REF = env.BRANCH_NAME.trim()
+        }
+
+        checkout([
+          $class: 'GitSCM',
+          branches: [[name: "${env.EFFECTIVE_REF}"]],
+          extensions: [[$class: 'CloneOption', shallow: false]],
+          userRemoteConfigs: [[ url: env.REPO_URL, credentialsId: env.GIT_CRED ]]
+        ])
+      }
+    }
+
+    stage('Verify Config') {
+      steps {
+        script {
+          sh "git config --global --add safe.directory \"\$(pwd)\" || true"
+
+          env.AWS_REGION = sh(returnStdout: true, script: '''TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600" 2>/dev/null || true) && if [ -n "$TOKEN" ]; then AWS_REGION=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.region' 2>/dev/null); else AWS_REGION=$(curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r '.region' 2>/dev/null); fi; AWS_REGION=${AWS_REGION:-${AWS_REGION:-}}; echo "$AWS_REGION"''').trim()
+
+          env.AWS_ACCOUNT_ID = sh(returnStdout: true,
+            script: "aws sts get-caller-identity --query Account --output text --region ${env.AWS_REGION}"
+          ).trim()
+
+          def svc
+          if (env.SVC_NAME?.trim()) {
+            svc = env.SVC_NAME.trim()
+          } else {
+            svc = sh(returnStdout: true, script: "basename `git rev-parse --show-toplevel`").trim()
+          }
+
+          env.IMAGE_NAME = "assetneuron-${svc}-${env.EFFECTIVE_REF}"
+          env.IMAGE_TAG  = sh(returnStdout: true, script: "git rev-parse --short=7 HEAD").trim()
+
+          sh 'if ! command -v java >/dev/null; then echo "Java missing"; exit 1; fi; java -version'
+
+          sh '''
+            if [ -f ./gradlew ]; then
+              ./gradlew --version
+            else
+              if ! command -v gradle >/dev/null; then echo "Gradle missing"; exit 1; fi
+              gradle --version
+            fi
+          '''
+          echo "AWS_REGION=${env.AWS_REGION}"
+          echo "AWS_ACCOUNT_ID=${env.AWS_ACCOUNT_ID}"
+          echo "IMAGE_NAME=${env.IMAGE_NAME}"
+          echo "IMAGE_TAG=${env.IMAGE_TAG}"
+        }
+      }
+    }
+
+    stage('Build (Gradle)') {
+      steps {
+        sh "chmod +x ${BUILD_SCRIPT} || true"
+        sh "${BUILD_SCRIPT}"
+      }
+    }
+
+    stage('Build & Push Image') {
+      steps {
+        script {
+          sh "chmod +x ${PUSH_SCRIPT} || true"
+          sh """
+            ${PUSH_SCRIPT} \
+            '${env.AWS_REGION}' \
+            '${env.AWS_ACCOUNT_ID}' \
+            '${env.IMAGE_NAME}' \
+            '${env.IMAGE_TAG}'
+          """
+        }
+      }
+    }
+
+    stage('Non-Prod Deployment') {
+      when { expression { env.EFFECTIVE_REF != 'main' && env.EFFECTIVE_REF != 'master' && !params.BUILD_PUSH_ONLY } }
+      steps {
+        script {
+          def key = env.EFFECTIVE_REF.toUpperCase() + "_ECS_CLUSTERNAME"
+          if (!env[key]) error "Cluster variable missing: ${key}"
+          def cluster = env[key]
+
+          def svcShort = env.SVC_NAME.trim()
+          def envLabel = (env.EFFECTIVE_REF == 'develop') ? 'dev' : (env.EFFECTIVE_REF == 'staging') ? 'staging' : (env.EFFECTIVE_REF == 'main') ? 'prod' : env.EFFECTIVE_REF
+          def service = "assetneuron-${envLabel}-${svcShort}"
+
+          sh "chmod +x ${ECS_SCRIPT} || true"
+          sh """
+            ${ECS_SCRIPT} \
+              --cluster '${cluster}' \
+              --service '${service}' \
+              --region '${env.AWS_REGION}' \
+              --wait
+          """
+        }
+      }
+    }
+
+    stage('Production Deployment') {
+      when { expression { env.EFFECTIVE_REF == 'main' || env.EFFECTIVE_REF == 'master' && !params.BUILD_PUSH_ONLY } }
+      steps {
+        script {
+          timeout(time: 4, unit: 'HOURS') {
+            input message: "Approve promotion of ${env.SHA} to production (bucket: ${env.BUCKET})?", ok: 'Approve'
+          }
+          echo "Promoting SHA ${env.SHA} to current for production"
+          def key = env.EFFECTIVE_REF.toUpperCase() + "_ECS_CLUSTERNAME"
+          if (!env[key]) error "Cluster variable missing: ${key}"
+          def cluster = env[key]
+          
+          def svcShort = env.SVC_NAME.trim()
+          def envLabel = (env.EFFECTIVE_REF == 'develop') ? 'dev' : (env.EFFECTIVE_REF == 'staging') ? 'staging' : (env.EFFECTIVE_REF == 'main') ? 'prod' : env.EFFECTIVE_REF
+          def service = "assetneuron-${envLabel}-${svcShort}"
+
+          sh "chmod +x ${ECS_SCRIPT} || true"
+          sh """
+            ${ECS_SCRIPT} \
+              --cluster '${cluster}' \
+              --service '${service}' \
+              --region '${env.AWS_REGION}' \
+              --wait
+          """
+        }
+      }
+    }
+  }
+
+  post {
+    success { echo "Deployment finished for SHA ${env.SHA}" }
+    failure {
+      echo "Deployment failed for SHA ${env.SHA}"
+    }
+    always {
+      sh '''
+        docker system prune -af || true
+      '''
+      cleanWs()
+    }
+  }
+}
