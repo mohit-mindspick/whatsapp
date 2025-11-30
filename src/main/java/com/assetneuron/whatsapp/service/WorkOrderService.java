@@ -142,7 +142,7 @@ public class WorkOrderService {
                     .workItemName(cases.getTitle())
                     .priority(cases.getSeverity() != null ? cases.getSeverity().name() : null)
                     .category("CASE")
-                    .assetId(cases.getAssetId() != null ? UUID.fromString(cases.getAssetId()) : null)
+                    .assetId(cases.getAssetId())
                     .assetName(cases.getAssetName())
                     .locationName(cases.getLocation())
                     .taskCount(0)
@@ -263,7 +263,7 @@ public class WorkOrderService {
             return Collections.emptyList();
         }
 
-        log.info("Creating documents from URLs - Count: {}, Parent ID: {}, Parent Type: {}", 
+        log.info("Creating documents from URLs - Count: {}, Parent ID: {}, Parent Type: {}",
                 documents.size(), workItemId, type);
 
         // Map AddCommentRequest.ExternalDocument to DocumentServiceCreateRequest.ExternalDocument
@@ -291,9 +291,9 @@ public class WorkOrderService {
                 // Extract UUIDs from the documents array
                 List<UUID> documentIds = documentServiceResponse.getDocuments() != null
                         ? documentServiceResponse.getDocuments().stream()
-                                .map(DocumentServiceCreateResponse.DocumentInfo::getUuid)
-                                .filter(uuid -> uuid != null)
-                                .collect(Collectors.toList())
+                        .map(DocumentServiceCreateResponse.DocumentInfo::getUuid)
+                        .filter(uuid -> uuid != null)
+                        .collect(Collectors.toList())
                         : Collections.emptyList();
                 log.info("Created {} documents successfully", documentIds.size());
                 return documentIds;
@@ -317,14 +317,14 @@ public class WorkOrderService {
      * @return Comment UUID
      */
     private UUID createComment(String content, List<UUID> documentIds, UUID workItemId, WorkItemType type) {
-        log.info("Creating comment with content, {} document IDs, Parent ID: {}, Parent Type: {}", 
+        log.info("Creating comment with content, {} document IDs, Parent ID: {}, Parent Type: {}",
                 documentIds.size(), workItemId, type);
 
         // Convert document UUIDs to String list for the request
         List<String> documentList = documentIds != null && !documentIds.isEmpty()
                 ? documentIds.stream()
-                        .map(UUID::toString)
-                        .collect(Collectors.toList())
+                .map(UUID::toString)
+                .collect(Collectors.toList())
                 : Collections.emptyList();
 
         // Build request payload with all required fields
@@ -363,7 +363,7 @@ public class WorkOrderService {
      *
      * @param workItemId Work item ID (work order or case ID)
      * @param commentId  Comment ID
-     * @param type      Work item type (WORKORDER or CASE)
+     * @param type       Work item type (WORKORDER or CASE)
      * @return HTTP response from work order service
      */
     public HttpClientResponse<Object> addCommentToWorkItem(UUID workItemId, UUID commentId, WorkItemType type) {
