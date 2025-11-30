@@ -1,5 +1,6 @@
 package com.assetneuron.whatsapp.dto;
 
+import com.assetneuron.whatsapp.enums.WorkOrderPartStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,9 +14,10 @@ import java.util.UUID;
 @AllArgsConstructor
 public class PartDTO {
     
-    private UUID partsId;
-    private String partsName;
+    private UUID workOrderPartId;
+    private UUID partId;
+    private String partCode;
     private Integer quantity;
-    private String status;
+    private WorkOrderPartStatus status;
 }
 

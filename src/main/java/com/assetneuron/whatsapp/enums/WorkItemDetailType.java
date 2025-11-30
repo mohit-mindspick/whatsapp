@@ -4,8 +4,10 @@ import lombok.Getter;
 
 @Getter
 public enum WorkItemDetailType {
-    DEFAULT("DEFAULT", "Default"),
-    PREVENTATIVE("PREVENTATIVE", "Preventative");
+
+    PREVENTIVE ("PREVENTIVE", "Preventive"),
+    CORRECTIVE ("CORRECTIVE", "Corrective"),
+    INSPECTION ("INSPECTION", "Inspection");
 
     private final String code;
     private final String label;

@@ -17,6 +17,7 @@ public class TaskDTO {
     private Integer sequence;
     private String name;
     private String instruction;
-    private String duration;
+    private Integer duration;
+
 }
 
