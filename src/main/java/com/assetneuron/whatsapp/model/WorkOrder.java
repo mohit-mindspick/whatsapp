@@ -68,11 +68,17 @@ public class WorkOrder extends BaseEntity {
     @Column(name = "due_date")
     private LocalDateTime dueDate;
 
-    @Column(name = "asset_id", columnDefinition = "UUID", nullable = false)
+    @Column(name = "asset_id", columnDefinition = "UUID")
     private UUID assetId;
 
-    @Column(name = "location_id", length = 50)
+    @Column(name = "asset_name")
+    private String assetName;
+
+    @Column(name = "location_id", columnDefinition = "UUID")
     private String locationId;
+
+    @Column(name = "location_name")
+    private String locationName;
 
     @Column(name = "is_active")
     @Builder.Default
@@ -80,6 +86,9 @@ public class WorkOrder extends BaseEntity {
 
     @Column(name = "assigned_to", columnDefinition = "UUID")
     private UUID assignedTo;
+
+    @Column(name = "assigned_to_name")
+    private String assignedToName;
 
     @Column(name = "status", length = 20, nullable = false)
     @Convert(converter = WorkOrderStatusConverter.class)

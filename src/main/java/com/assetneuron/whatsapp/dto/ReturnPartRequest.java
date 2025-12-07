@@ -26,13 +26,10 @@ public class ReturnPartRequest {
     @NotNull(message = ErrorMessages.VALIDATION_PART_ID_REQUIRED)
     private UUID partId;
     
-    @JsonProperty(value = "part_name")
-    @NotBlank(message = ErrorMessages.VALIDATION_PART_NAME_REQUIRED)
-    private String partName;
-    
     @JsonProperty(value = "quantity")
     @NotNull(message = ErrorMessages.VALIDATION_QUANTITY_REQUIRED)
     @Positive(message = ErrorMessages.VALIDATION_QUANTITY_POSITIVE)
     private Integer quantity;
+
 }
 

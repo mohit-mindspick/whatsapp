@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -18,10 +19,13 @@ public class WorkItemDetailDTO {
     private String workItemName;
     private String priority;
     private String category;
+    private UUID assetId;
     private String assetName;
+    private UUID locationId;
     private String locationName;
     private WorkItemDetailType type;
     private Integer taskCount;
     private String status;
+    private LocalDateTime dueDate;
 }
 

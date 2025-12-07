@@ -45,8 +45,8 @@ public class ChecklistItem extends BaseEntity {
     @Column(name = "item_text", length = 255, nullable = false)
     private String itemText;
 
-    @Column(name = "comment_id", columnDefinition = "UUID")
-    private UUID commentId;
+   /* @Column(name = "comment_id", columnDefinition = "UUID")
+    private UUID commentId;*/
 
     @Column(name = "status", length = 50)
     private String status;
