@@ -43,6 +43,9 @@ public class WorkOrderPart extends BaseEntity {
     @Column(name = "part_code", length = 100, nullable = false)
     private String partCode;
 
+    @Column(name = "part_id", columnDefinition = "UUID", nullable = false)
+    private UUID partId;
+
     @Column(name = "unit_price", precision = 10, scale = 2, nullable = false)
     private BigDecimal unitPrice;
 

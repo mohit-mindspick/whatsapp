@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @Builder
@@ -13,8 +14,9 @@ import java.util.List;
 @AllArgsConstructor
 public class TaskChecklistResponseDTO {
     
-    private Integer taskSequence;
-    private Integer countOfChecklistItem;
+    private UUID id;
+    private Integer sequence;
+    private Integer countOfChecklist;
     private List<ChecklistItemDTO> checklistItems;
 }
 

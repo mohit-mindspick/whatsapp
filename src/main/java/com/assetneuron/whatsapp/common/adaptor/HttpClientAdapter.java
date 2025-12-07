@@ -36,7 +36,7 @@ public class HttpClientAdapter {
      */
     public <T> HttpClientResponse<T> get(String url, Class<T> responseType) {
         String bearerToken = requestTokenUtil.getBearerTokenFromRequest();
-        return executeRequest(HttpMethod.GET, url, bearerToken, null, null, responseType);
+        return executeRequest(HttpMethod.GET, url, bearerToken, null, null, null, responseType);
     }
 
     /**
@@ -49,7 +49,7 @@ public class HttpClientAdapter {
      */
     public <T> HttpClientResponse<T> get(String url, Map<String, String> queryParams, Class<T> responseType) {
         String bearerToken = requestTokenUtil.getBearerTokenFromRequest();
-        return executeRequest(HttpMethod.GET, url, bearerToken, null, queryParams, responseType);
+        return executeRequest(HttpMethod.GET, url, bearerToken, null, queryParams, null, responseType);
     }
 
     /**
@@ -62,7 +62,24 @@ public class HttpClientAdapter {
      */
     public <T> HttpClientResponse<T> post(String url, Object payload, Class<T> responseType) {
         String bearerToken = requestTokenUtil.getBearerTokenFromRequest();
-        return executeRequest(HttpMethod.POST, url, bearerToken, payload, null, responseType);
+
+        log.info("bearerToken ---- {}",bearerToken);
+
+        return executeRequest(HttpMethod.POST, url, bearerToken, payload, null, null, responseType);
+    }
+
+    /**
+     * Execute POST request with custom headers
+     *
+     * @param url         The service URL
+     * @param payload     Request payload object
+     * @param customHeaders Custom headers to include in the request
+     * @param responseType Class type for response body deserialization
+     * @return HttpClientResponse containing status code and response body
+     */
+    public <T> HttpClientResponse<T> post(String url, Object payload, Map<String, String> customHeaders, Class<T> responseType) {
+        String bearerToken = requestTokenUtil.getBearerTokenFromRequest();
+        return executeRequest(HttpMethod.POST, url, bearerToken, payload, null, customHeaders, responseType);
     }
 
     /**
@@ -75,7 +92,20 @@ public class HttpClientAdapter {
      */
     public <T> HttpClientResponse<T> put(String url, Object payload, Class<T> responseType) {
         String bearerToken = requestTokenUtil.getBearerTokenFromRequest();
-        return executeRequest(HttpMethod.PUT, url, bearerToken, payload, null, responseType);
+        return executeRequest(HttpMethod.PUT, url, bearerToken, payload, null, null, responseType);
+    }
+
+    /**
+     * Execute PUT request with query parameters
+     *
+     * @param url         The service URL
+     * @param queryParams Query parameters as a map
+     * @param responseType Class type for response body deserialization
+     * @return HttpClientResponse containing status code and response body
+     */
+    public <T> HttpClientResponse<T> put(String url, Map<String, String> queryParams, Class<T> responseType) {
+        String bearerToken = requestTokenUtil.getBearerTokenFromRequest();
+        return executeRequest(HttpMethod.PUT, url, bearerToken, null, queryParams, null, responseType);
     }
 
     /**
@@ -87,7 +117,7 @@ public class HttpClientAdapter {
      */
     public <T> HttpClientResponse<T> delete(String url, Class<T> responseType) {
         String bearerToken = requestTokenUtil.getBearerTokenFromRequest();
-        return executeRequest(HttpMethod.DELETE, url, bearerToken, null, null, responseType);
+        return executeRequest(HttpMethod.DELETE, url, bearerToken, null, null, null, responseType);
     }
 
     /**
@@ -100,7 +130,7 @@ public class HttpClientAdapter {
      */
     public <T> HttpClientResponse<T> patch(String url, Object payload, Class<T> responseType) {
         String bearerToken = requestTokenUtil.getBearerTokenFromRequest();
-        return executeRequest(HttpMethod.PATCH, url, bearerToken, payload, null, responseType);
+        return executeRequest(HttpMethod.PATCH, url, bearerToken, payload, null, null, responseType);
     }
 
     /**
@@ -111,6 +141,7 @@ public class HttpClientAdapter {
      * @param bearerToken Bearer token for authentication
      * @param payload     Request payload (can be null for GET/DELETE)
      * @param queryParams Query parameters (can be null)
+     * @param customHeaders Custom headers to include (can be null)
      * @param responseType Class type for response body deserialization
      * @return HttpClientResponse containing status code and response body
      */
@@ -120,6 +151,7 @@ public class HttpClientAdapter {
             String bearerToken,
             Object payload,
             Map<String, String> queryParams,
+            Map<String, String> customHeaders,
             Class<T> responseType) {
 
         try {
@@ -129,7 +161,7 @@ public class HttpClientAdapter {
             log.debug("Executing {} request to URL: {}", method, finalUrl);
 
             // Create headers
-            HttpHeaders headers = createHeaders(bearerToken);
+            HttpHeaders headers = createHeaders(bearerToken, customHeaders);
 
             // Create request entity
             HttpEntity<Object> requestEntity = new HttpEntity<>(payload, headers);
@@ -231,9 +263,9 @@ public class HttpClientAdapter {
     }
 
     /**
-     * Create HTTP headers with Bearer token
+     * Create HTTP headers with Bearer token, X-Tenant-Id, and optional custom headers
      */
-    private HttpHeaders createHeaders(String bearerToken) {
+    private HttpHeaders createHeaders(String bearerToken, Map<String, String> customHeaders) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(java.util.List.of(MediaType.APPLICATION_JSON));
@@ -242,6 +274,19 @@ public class HttpClientAdapter {
             // Ensure token has "Bearer " prefix
             String token = bearerToken.startsWith("Bearer ") ? bearerToken : "Bearer " + bearerToken;
             headers.set("Authorization", token);
+        }
+
+        // Automatically include X-Tenant-Id from request context
+        String tenantId = requestTokenUtil.getTenantIdFromRequest();
+        if (tenantId != null && !tenantId.trim().isEmpty()) {
+            headers.set("X-Tenant-Id", tenantId);
+        }
+
+        // Add custom headers if provided (these will override any automatically added headers with the same name)
+        if (customHeaders != null) {
+            for (Map.Entry<String, String> entry : customHeaders.entrySet()) {
+                headers.set(entry.getKey(), entry.getValue());
+            }
         }
 
         return headers;

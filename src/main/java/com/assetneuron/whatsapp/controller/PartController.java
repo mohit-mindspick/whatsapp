@@ -1,8 +1,12 @@
 package com.assetneuron.whatsapp.controller;
 
+import com.assetneuron.whatsapp.common.adaptor.HttpClientResponse;
+import com.assetneuron.whatsapp.common.adaptor.RequestTokenUtil;
 import com.assetneuron.whatsapp.common.model.ApiResponse;
+import com.assetneuron.whatsapp.dto.CollectPartRequest;
 import com.assetneuron.whatsapp.dto.PartDTO;
 import com.assetneuron.whatsapp.dto.ReturnPartRequest;
+import com.assetneuron.whatsapp.dto.WorkOrderPartDTO;
 import com.assetneuron.whatsapp.service.PartService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -17,7 +21,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -33,14 +36,16 @@ import java.util.UUID;
 public class PartController {
 
     private final PartService partService;
+    private final RequestTokenUtil requestTokenUtil;
 
     @GetMapping("/workorder/{workOrderId}")
     public ResponseEntity<ApiResponse<List<PartDTO>>> getWorkOrderParts(
             @PathVariable UUID workOrderId,
-            @RequestHeader(value = "X-Tenant-Id", required = true) UUID tenantId,
             Authentication authentication) {
 
         try {
+            // Extract tenant ID from JWT token (validates token and tenant ID presence)
+            UUID tenantId = requestTokenUtil.getTenantIdFromToken();
             List<PartDTO> parts = partService.getWorkOrderParts(workOrderId, tenantId);
 
             return ResponseEntity.ok(ApiResponse.<List<PartDTO>>builder()
@@ -59,23 +64,36 @@ public class PartController {
     }
 
     @PutMapping("/workorder/{workOrderId}")
-    public ResponseEntity<ApiResponse<Void>> updateWorkOrderParts(
+    public ResponseEntity<ApiResponse<Object>> updateWorkOrderParts(
             @PathVariable UUID workOrderId,
-            @Valid @RequestBody List<PartDTO> parts,
-            @RequestHeader(value = "X-Tenant-Id", required = true) UUID tenantId,
+            @Valid @RequestBody List<WorkOrderPartDTO> parts,
             Authentication authentication) {
 
         try {
-            partService.updateWorkOrderParts(workOrderId, parts, tenantId);
+            // Extract tenant ID from JWT token (validates token and tenant ID presence)
+            UUID tenantId = requestTokenUtil.getTenantIdFromToken();
+            HttpClientResponse<Object> response = partService.updateWorkOrderParts(workOrderId, parts, tenantId);
 
-            return ResponseEntity.ok(ApiResponse.<Void>builder()
-                    .success(true)
-                    .message("Parts updated successfully")
-                    .build());
+            // Return the response from work order service
+            if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
+                return ResponseEntity.status(response.getStatusCode())
+                        .body(ApiResponse.<Object>builder()
+                                .success(true)
+                                .data(response.getBody())
+                                .message("Parts updated successfully")
+                                .build());
+            } else {
+                return ResponseEntity.status(response.getStatusCode())
+                        .body(ApiResponse.<Object>builder()
+                                .success(false)
+                                .data(response.getBody())
+                                .message("Failed to update parts")
+                                .build());
+            }
         } catch (Exception e) {
             log.error("Error updating parts for work order id: {}", workOrderId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.<Void>builder()
+                    .body(ApiResponse.<Object>builder()
                             .success(false)
                             .message("Failed to update parts: " + e.getMessage())
                             .build());
@@ -83,25 +101,75 @@ public class PartController {
     }
 
     @PostMapping("/return")
-    public ResponseEntity<ApiResponse<Void>> returnPart(
+    public ResponseEntity<ApiResponse<Object>> returnPart(
             @Valid @RequestBody ReturnPartRequest request,
-            @RequestHeader(value = "X-Tenant-Id", required = true) UUID tenantId,
             Authentication authentication) {
 
         try {
-            partService.returnPart(request, tenantId);
+            // Extract tenant ID from JWT token (validates token and tenant ID presence)
+            UUID tenantId = requestTokenUtil.getTenantIdFromToken();
+            HttpClientResponse<Object> response = partService.returnPart(request, tenantId);
 
-            return ResponseEntity.ok(ApiResponse.<Void>builder()
-                    .success(true)
-                    .message("Part returned successfully")
-                    .build());
+            // Return the response from work order service
+            if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
+                return ResponseEntity.status(response.getStatusCode())
+                        .body(ApiResponse.<Object>builder()
+                                .success(true)
+                                .data(response.getBody())
+                                .message("Part returned successfully")
+                                .build());
+            } else {
+                return ResponseEntity.status(response.getStatusCode())
+                        .body(ApiResponse.<Object>builder()
+                                .success(false)
+                                .data(response.getBody())
+                                .message("Failed to return part")
+                                .build());
+            }
         } catch (Exception e) {
             log.error("Error returning part for work order id: {}, part id: {}",
                     request.getWorkOrderId(), request.getPartId(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.<Void>builder()
+                    .body(ApiResponse.<Object>builder()
                             .success(false)
                             .message("Failed to return part: " + e.getMessage())
+                            .build());
+        }
+    }
+
+    @PostMapping("/collect")
+    public ResponseEntity<ApiResponse<Object>> collectPart(
+            @Valid @RequestBody CollectPartRequest request,
+            Authentication authentication) {
+
+        try {
+            // Extract tenant ID from JWT token (validates token and tenant ID presence)
+            UUID tenantId = requestTokenUtil.getTenantIdFromToken();
+            HttpClientResponse<Object> response = partService.collectPart(request, tenantId);
+
+            // Return the response from work order service
+            if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
+                return ResponseEntity.status(response.getStatusCode())
+                        .body(ApiResponse.<Object>builder()
+                                .success(true)
+                                .data(response.getBody())
+                                .message("Part collected successfully")
+                                .build());
+            } else {
+                return ResponseEntity.status(response.getStatusCode())
+                        .body(ApiResponse.<Object>builder()
+                                .success(false)
+                                .data(response.getBody())
+                                .message("Failed to collect part")
+                                .build());
+            }
+        } catch (Exception e) {
+            log.error("Error collecting part for work order id: {}, part id: {}",
+                    request.getWorkOrderId(), request.getPartId(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.<Object>builder()
+                            .success(false)
+                            .message("Failed to collect part: " + e.getMessage())
                             .build());
         }
     }

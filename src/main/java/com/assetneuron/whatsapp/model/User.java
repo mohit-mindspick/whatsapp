@@ -3,7 +3,10 @@ package com.assetneuron.whatsapp.model;
 import com.assetneuron.whatsapp.common.persistence.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,6 +38,15 @@ public class User extends BaseEntity {
 
     @Column(name = "phone_number", nullable = false, length = 20, unique = true)
     private String phoneNumber;
+
+    @Column(name = "is_shift_supervisor", nullable = false)
+    @Builder.Default
+    private boolean isShiftSupervisor = false;
+
+    // Shift relationship - Each user can have only one Shift
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shift_id", nullable = true)
+    private Shift shift;
 
     @Column(name = "is_deleted", nullable = false)
     @Builder.Default

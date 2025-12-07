@@ -1,8 +1,9 @@
 package com.assetneuron.whatsapp.dto;
 
 import com.assetneuron.whatsapp.common.constant.ErrorMessages;
+import com.assetneuron.whatsapp.enums.WorkOrderPartStatus;
+import com.assetneuron.whatsapp.validation.ValidCollectPartStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
@@ -16,7 +17,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReturnPartRequest {
+public class CollectPartRequest {
     
     @JsonProperty(value = "work_order_id")
     @NotNull(message = ErrorMessages.VALIDATION_WORK_ORDER_ID_REQUIRED)

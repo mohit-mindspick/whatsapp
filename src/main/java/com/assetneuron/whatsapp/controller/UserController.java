@@ -1,5 +1,6 @@
 package com.assetneuron.whatsapp.controller;
 
+import com.assetneuron.whatsapp.common.adaptor.RequestTokenUtil;
 import com.assetneuron.whatsapp.common.model.ApiResponse;
 import com.assetneuron.whatsapp.dto.SupervisorDTO;
 import com.assetneuron.whatsapp.dto.UserDTO;
@@ -12,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,15 +28,18 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService userService;
+    private final RequestTokenUtil requestTokenUtil;
 
     @GetMapping("/by-phone")
     public ResponseEntity<ApiResponse<UserDTO>> getUserByPhoneNumber(
             @RequestParam("phoneNumber") String phoneNumber,
-            @RequestHeader(value = "X-Tenant-Id", required = true) UUID tenantId,
             Authentication authentication) {
 
         try {
-            UserDTO userDTO = userService.getUserByPhoneNumber(phoneNumber);
+            // Extract tenant ID from JWT token (validates token and tenant ID presence)
+            UUID tenantId = requestTokenUtil.getTenantIdFromToken();
+
+            UserDTO userDTO = userService.getUserByPhoneNumber(phoneNumber, tenantId);
 
             return ResponseEntity.ok(ApiResponse.<UserDTO>builder()
                     .success(true)
@@ -63,11 +66,13 @@ public class UserController {
     @GetMapping("/supervisor/by-phone")
     public ResponseEntity<ApiResponse<SupervisorDTO>> getSupervisorByPhoneNumber(
             @RequestParam("phoneNumber") String phoneNumber,
-            @RequestHeader(value = "X-Tenant-Id", required = true) UUID tenantId,
             Authentication authentication) {
 
         try {
-            SupervisorDTO supervisorDTO = userService.getSupervisorByPhoneNumber(phoneNumber);
+            // Extract tenant ID from JWT token (validates token and tenant ID presence)
+            UUID tenantId = requestTokenUtil.getTenantIdFromToken();
+
+            SupervisorDTO supervisorDTO = userService.getSupervisorByPhoneNumber(phoneNumber, tenantId);
 
             return ResponseEntity.ok(ApiResponse.<SupervisorDTO>builder()
                     .success(true)
