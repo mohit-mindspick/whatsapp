@@ -3,6 +3,7 @@ package com.assetneuron.whatsapp.controller;
 import com.assetneuron.whatsapp.common.adaptor.HttpClientResponse;
 import com.assetneuron.whatsapp.common.adaptor.RequestTokenUtil;
 import com.assetneuron.whatsapp.common.model.ApiResponse;
+import com.assetneuron.whatsapp.dto.ResponseCodes;
 import com.assetneuron.whatsapp.dto.SaveTaskChecklistItemsRequest;
 import com.assetneuron.whatsapp.dto.TaskChecklistResponseDTO;
 import com.assetneuron.whatsapp.service.TaskService;
@@ -48,7 +49,7 @@ public class TaskController {
             return ResponseEntity.ok(ApiResponse.<TaskChecklistResponseDTO>builder()
                     .success(true)
                     .data(response)
-                    .message("Checklist items retrieved successfully")
+                    .message(ResponseCodes.CHECKLIST_ITEMS_RETRIEVAL_SUCCESSFUL.name())
                     .build());
         } catch (Exception e) {
             log.error("Error retrieving checklist items for work order id: {}, task id: {}",
@@ -56,7 +57,7 @@ public class TaskController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.<TaskChecklistResponseDTO>builder()
                             .success(false)
-                            .message("Failed to retrieve checklist items: " + e.getMessage())
+                            .message(ResponseCodes.ERR_FAILED_TO_RETRIEVE_CHECKLIST_ITEMS.name())
                             .build());
         }
     }
@@ -77,14 +78,14 @@ public class TaskController {
                         .body(ApiResponse.<Object>builder()
                                 .success(true)
                                 .data(response.getBody())
-                                .message("Checklist item responses saved successfully")
+                                .message(ResponseCodes.CHECKLIST_ITEM_RESPONSES_SAVED_SUCCESSFUL.name())
                                 .build());
             } else {
                 return ResponseEntity.status(response.getStatusCode())
                         .body(ApiResponse.<Object>builder()
                                 .success(false)
                                 .data(response.getBody())
-                                .message("Failed to save checklist item responses")
+                                .message(ResponseCodes.ERR_FAILED_TO_SAVE_CHECKLIST_ITEM_RESPONSES.name())
                                 .build());
             }
         } catch (Exception e) {
@@ -93,7 +94,7 @@ public class TaskController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.<Object>builder()
                             .success(false)
-                            .message("Failed to save checklist item responses: " + e.getMessage())
+                            .message(ResponseCodes.ERR_FAILED_TO_SAVE_CHECKLIST_ITEM_RESPONSES.name())
                             .build());
         }
     }*/

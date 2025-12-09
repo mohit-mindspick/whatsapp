@@ -5,6 +5,7 @@ import com.assetneuron.whatsapp.common.adaptor.RequestTokenUtil;
 import com.assetneuron.whatsapp.common.model.ApiResponse;
 import com.assetneuron.whatsapp.dto.CollectPartRequest;
 import com.assetneuron.whatsapp.dto.PartDTO;
+import com.assetneuron.whatsapp.dto.ResponseCodes;
 import com.assetneuron.whatsapp.dto.ReturnPartRequest;
 import com.assetneuron.whatsapp.dto.WorkOrderPartDTO;
 import com.assetneuron.whatsapp.service.PartService;
@@ -51,14 +52,14 @@ public class PartController {
             return ResponseEntity.ok(ApiResponse.<List<PartDTO>>builder()
                     .success(true)
                     .data(parts)
-                    .message("Parts retrieved successfully")
+                    .message(ResponseCodes.PARTS_RETRIEVAL_SUCCESSFUL.name())
                     .build());
         } catch (Exception e) {
             log.error("Error retrieving parts for work order id: {}", workOrderId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.<List<PartDTO>>builder()
                             .success(false)
-                            .message("Failed to retrieve parts: " + e.getMessage())
+                            .message(ResponseCodes.ERR_FAILED_TO_RETRIEVE_PARTS.name())
                             .build());
         }
     }
@@ -80,14 +81,14 @@ public class PartController {
                         .body(ApiResponse.<Object>builder()
                                 .success(true)
                                 .data(response.getBody())
-                                .message("Parts updated successfully")
+                                .message(ResponseCodes.PARTS_UPDATED_SUCCESSFUL.name())
                                 .build());
             } else {
                 return ResponseEntity.status(response.getStatusCode())
                         .body(ApiResponse.<Object>builder()
                                 .success(false)
                                 .data(response.getBody())
-                                .message("Failed to update parts")
+                                .message(ResponseCodes.ERR_FAILED_TO_UPDATE_PARTS.name())
                                 .build());
             }
         } catch (Exception e) {
@@ -95,7 +96,7 @@ public class PartController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.<Object>builder()
                             .success(false)
-                            .message("Failed to update parts: " + e.getMessage())
+                            .message(ResponseCodes.ERR_FAILED_TO_UPDATE_PARTS.name())
                             .build());
         }
     }
@@ -116,14 +117,14 @@ public class PartController {
                         .body(ApiResponse.<Object>builder()
                                 .success(true)
                                 .data(response.getBody())
-                                .message("Part returned successfully")
+                                .message(ResponseCodes.PART_RETURNED_SUCCESSFUL.name())
                                 .build());
             } else {
                 return ResponseEntity.status(response.getStatusCode())
                         .body(ApiResponse.<Object>builder()
                                 .success(false)
                                 .data(response.getBody())
-                                .message("Failed to return part")
+                                .message(ResponseCodes.ERR_FAILED_TO_RETURN_PART.name())
                                 .build());
             }
         } catch (Exception e) {
@@ -132,7 +133,7 @@ public class PartController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.<Object>builder()
                             .success(false)
-                            .message("Failed to return part: " + e.getMessage())
+                            .message(ResponseCodes.ERR_FAILED_TO_RETURN_PART.name())
                             .build());
         }
     }
@@ -153,14 +154,14 @@ public class PartController {
                         .body(ApiResponse.<Object>builder()
                                 .success(true)
                                 .data(response.getBody())
-                                .message("Part collected successfully")
+                                .message(ResponseCodes.PART_COLLECTED_SUCCESSFUL.name())
                                 .build());
             } else {
                 return ResponseEntity.status(response.getStatusCode())
                         .body(ApiResponse.<Object>builder()
                                 .success(false)
                                 .data(response.getBody())
-                                .message("Failed to collect part")
+                                .message(ResponseCodes.ERR_FAILED_TO_COLLECT_PART.name())
                                 .build());
             }
         } catch (Exception e) {
@@ -169,7 +170,7 @@ public class PartController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.<Object>builder()
                             .success(false)
-                            .message("Failed to collect part: " + e.getMessage())
+                            .message(ResponseCodes.ERR_FAILED_TO_COLLECT_PART.name())
                             .build());
         }
     }
