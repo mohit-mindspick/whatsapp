@@ -2,6 +2,7 @@ package com.assetneuron.whatsapp.controller;
 
 import com.assetneuron.whatsapp.common.adaptor.RequestTokenUtil;
 import com.assetneuron.whatsapp.common.model.ApiResponse;
+import com.assetneuron.whatsapp.dto.ResponseCodes;
 import com.assetneuron.whatsapp.dto.SupervisorDTO;
 import com.assetneuron.whatsapp.dto.UserDTO;
 import com.assetneuron.whatsapp.service.UserService;
@@ -44,7 +45,7 @@ public class UserController {
             return ResponseEntity.ok(ApiResponse.<UserDTO>builder()
                     .success(true)
                     .data(userDTO)
-                    .message("User retrieved successfully")
+                    .message(ResponseCodes.USER_RETRIEVAL_SUCCESSFUL.name())
                     .build());
         } catch (RuntimeException e) {
             log.error("Error retrieving user by phone number: {}", phoneNumber, e);
@@ -58,7 +59,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.<UserDTO>builder()
                             .success(false)
-                            .message("Failed to retrieve user: " + e.getMessage())
+                            .message(ResponseCodes.ERR_FAILED_TO_RETRIEVE_USER.name())
                             .build());
         }
     }
@@ -77,7 +78,7 @@ public class UserController {
             return ResponseEntity.ok(ApiResponse.<SupervisorDTO>builder()
                     .success(true)
                     .data(supervisorDTO)
-                    .message("Supervisor details retrieved successfully")
+                    .message(ResponseCodes.SUPERVISOR_RETRIEVAL_SUCCESSFUL.name())
                     .build());
         } catch (RuntimeException e) {
             log.error("Error retrieving supervisor by phone number: {}", phoneNumber, e);
@@ -91,7 +92,7 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.<SupervisorDTO>builder()
                             .success(false)
-                            .message("Failed to retrieve supervisor: " + e.getMessage())
+                            .message(ResponseCodes.ERR_FAILED_TO_RETRIEVE_SUPERVISOR.name())
                             .build());
         }
     }

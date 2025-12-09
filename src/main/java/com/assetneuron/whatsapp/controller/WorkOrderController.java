@@ -6,6 +6,7 @@ import com.assetneuron.whatsapp.common.model.ApiResponse;
 import com.assetneuron.whatsapp.dto.AddCommentRequest;
 import com.assetneuron.whatsapp.dto.LogHoursRequest;
 import com.assetneuron.whatsapp.dto.MyWorkDTO;
+import com.assetneuron.whatsapp.dto.ResponseCodes;
 import com.assetneuron.whatsapp.dto.SaveAssetRatingRequest;
 import com.assetneuron.whatsapp.dto.ViewMyWorkRequest;
 import com.assetneuron.whatsapp.dto.ViewWorkOrderDetailRequest;
@@ -63,14 +64,14 @@ public class WorkOrderController {
             return ResponseEntity.ok(ApiResponse.<List<MyWorkDTO>>builder()
                     .success(true)
                     .data(myWorkList)
-                    .message("Work items retrieved successfully")
+                    .message(ResponseCodes.WORK_ITEMS_RETRIEVAL_SUCCESSFUL.name())
                     .build());
         } catch (Exception e) {
             log.error("Error retrieving work items for phone number: {}", phoneNumber, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.<List<MyWorkDTO>>builder()
                             .success(false)
-                            .message("Failed to retrieve work items: " + e.getMessage())
+                            .message(ResponseCodes.ERR_FAILED_TO_RETRIEVE_WORK_ITEMS.name())
                             .build());
         }
     }
@@ -96,14 +97,14 @@ public class WorkOrderController {
             return ResponseEntity.ok(ApiResponse.<WorkItemDetailDTO>builder()
                     .success(true)
                     .data(workOrderDetail)
-                    .message("Work order detail retrieved successfully")
+                    .message(ResponseCodes.WORK_ORDER_DETAIL_RETRIEVAL_SUCCESSFUL.name())
                     .build());
         } catch (IllegalArgumentException e) {
             log.error("Invalid item type: {}", type, e);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(ApiResponse.<WorkItemDetailDTO>builder()
                             .success(false)
-                            .message("Invalid item type: " + e.getMessage())
+                            .message(ResponseCodes.ERR_INVALID_ITEM_TYPE.name())
                             .build());
         } catch (Exception e) {
             log.error("Error retrieving work order detail for phone number: {}, work item id: {}",
@@ -111,7 +112,7 @@ public class WorkOrderController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.<WorkItemDetailDTO>builder()
                             .success(false)
-                            .message("Failed to retrieve work order detail: " + e.getMessage())
+                            .message(ResponseCodes.ERR_FAILED_TO_RETRIEVE_WORK_ORDER_DETAIL.name())
                             .build());
         }
     }
@@ -129,14 +130,14 @@ public class WorkOrderController {
             return ResponseEntity.ok(ApiResponse.<WorkItemTasksResponseDTO>builder()
                     .success(true)
                     .data(tasksResponse)
-                    .message("Tasks retrieved successfully")
+                    .message(ResponseCodes.TASKS_RETRIEVAL_SUCCESSFUL.name())
                     .build());
         } catch (Exception e) {
             log.error("Error retrieving tasks for work item id: {}", workItemId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.<WorkItemTasksResponseDTO>builder()
                             .success(false)
-                            .message("Failed to retrieve tasks: " + e.getMessage())
+                            .message(ResponseCodes.ERR_FAILED_TO_RETRIEVE_TASKS.name())
                             .build());
         }
     }
@@ -157,14 +158,14 @@ public class WorkOrderController {
                         .body(ApiResponse.<Object>builder()
                                 .success(true)
                                 .data(response.getBody())
-                                .message("Hours logged successfully")
+                                .message(ResponseCodes.HOURS_LOGGED_SUCCESSFUL.name())
                                 .build());
             } else {
                 return ResponseEntity.status(response.getStatusCode())
                         .body(ApiResponse.<Object>builder()
                                 .success(false)
                                 .data(response.getBody())
-                                .message("Failed to log hours")
+                                .message(ResponseCodes.ERR_FAILED_TO_LOG_HOURS.name())
                                 .build());
             }
         } catch (Exception e) {
@@ -173,7 +174,7 @@ public class WorkOrderController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.<Object>builder()
                             .success(false)
-                            .message("Failed to log hours: " + e.getMessage())
+                            .message(ResponseCodes.ERR_FAILED_TO_LOG_HOURS.name())
                             .build());
         }
     }
@@ -194,14 +195,14 @@ public class WorkOrderController {
                         .body(ApiResponse.<Object>builder()
                                 .success(true)
                                 .data(response.getBody())
-                                .message("Asset rating saved successfully")
+                                .message(ResponseCodes.ASSET_RATING_SAVED_SUCCESSFUL.name())
                                 .build());
             } else {
                 return ResponseEntity.status(response.getStatusCode())
                         .body(ApiResponse.<Object>builder()
                                 .success(false)
                                 .data(response.getBody())
-                                .message("Failed to save asset rating")
+                                .message(ResponseCodes.ERR_FAILED_TO_SAVE_ASSET_RATING.name())
                                 .build());
             }
         } catch (Exception e) {
@@ -210,7 +211,7 @@ public class WorkOrderController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.<Object>builder()
                             .success(false)
-                            .message("Failed to save asset rating: " + e.getMessage())
+                            .message(ResponseCodes.ERR_FAILED_TO_SAVE_ASSET_RATING.name())
                             .build());
         }
     }
@@ -233,14 +234,14 @@ public class WorkOrderController {
                         .body(ApiResponse.<Object>builder()
                                 .success(true)
                                 .data(response.getBody())
-                                .message("Comment added successfully")
+                                .message(ResponseCodes.COMMENT_ADDED_SUCCESSFUL.name())
                                 .build());
             } else {
                 return ResponseEntity.status(response.getStatusCode())
                         .body(ApiResponse.<Object>builder()
                                 .success(false)
                                 .data(response.getBody())
-                                .message("Failed to add comment")
+                                .message(ResponseCodes.ERR_FAILED_TO_ADD_COMMENT.name())
                                 .build());
             }
         } catch (Exception e) {
@@ -249,7 +250,7 @@ public class WorkOrderController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.<Object>builder()
                             .success(false)
-                            .message("Failed to add comment: " + e.getMessage())
+                            .message(ResponseCodes.ERR_FAILED_TO_ADD_COMMENT.name())
                             .build());
         }
     }
@@ -276,14 +277,14 @@ public class WorkOrderController {
                         .body(ApiResponse.<Object>builder()
                                 .success(true)
                                 .data(response.getBody())
-                                .message("Comment added successfully")
+                                .message(ResponseCodes.COMMENT_ADDED_SUCCESSFUL.name())
                                 .build());
             } else {
                 return ResponseEntity.status(response.getStatusCode())
                         .body(ApiResponse.<Object>builder()
                                 .success(false)
                                 .data(response.getBody())
-                                .message("Failed to add comment")
+                                .message(ResponseCodes.ERR_FAILED_TO_ADD_COMMENT.name())
                                 .build());
             }
         } catch (Exception e) {
@@ -292,7 +293,7 @@ public class WorkOrderController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(ApiResponse.<Object>builder()
                             .success(false)
-                            .message("Failed to add comment: " + e.getMessage())
+                            .message(ResponseCodes.ERR_FAILED_TO_ADD_COMMENT.name())
                             .build());
         }
     }
