@@ -8,7 +8,6 @@ import org.springframework.kafka.config.TopicBuilder;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.core.KafkaAdmin;
 
 @Configuration
 @Slf4j
