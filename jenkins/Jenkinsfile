@@ -110,7 +110,7 @@ pipeline {
           def cluster = env[key]
 
           def svcShort = env.SVC_NAME.trim()
-          def envLabel = (env.EFFECTIVE_REF == 'develop') ? 'dev' : (env.EFFECTIVE_REF == 'staging') ? 'staging' : (env.EFFECTIVE_REF == 'main') ? 'prod' : env.EFFECTIVE_REF
+          def envLabel = (env.EFFECTIVE_REF == 'develop') ? 'dev' : (env.EFFECTIVE_REF == 'staging') ? 'stg' : (env.EFFECTIVE_REF == 'main') ? 'prd' : env.EFFECTIVE_REF
           def service = "assetneuron-${envLabel}-${svcShort}"
 
           sh "chmod +x ${ECS_SCRIPT} || true"
@@ -139,7 +139,7 @@ pipeline {
           
           def svcShort = env.SVC_NAME.trim()
           def envLabel = (env.EFFECTIVE_REF == 'develop') ? 'dev' : (env.EFFECTIVE_REF == 'staging') ? 'staging' : (env.EFFECTIVE_REF == 'main') ? 'prod' : env.EFFECTIVE_REF
-          def service = "assetneuron-${envLabel}-${svcShort}"
+          def envLabel = (env.EFFECTIVE_REF == 'develop') ? 'dev' : (env.EFFECTIVE_REF == 'staging') ? 'stg' : (env.EFFECTIVE_REF == 'main') ? 'prd' : env.EFFECTIVE_REF
 
           sh "chmod +x ${ECS_SCRIPT} || true"
           sh """
