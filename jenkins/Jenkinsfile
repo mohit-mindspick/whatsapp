@@ -140,8 +140,8 @@ pipeline {
           def svcShort = env.SVC_NAME.trim()
 
           def envLabel = (env.EFFECTIVE_REF == 'develop') ? 'dev' : (env.EFFECTIVE_REF == 'staging') ? 'stg' : (env.EFFECTIVE_REF == 'main') ? 'prd' : env.EFFECTIVE_REF
-          def service = "whatsapp-${envLabel}-${svcShort}"
-          
+          def service = "assetneuron-${envLabel}-${svcShort}"
+
           sh "chmod +x ${ECS_SCRIPT} || true"
           sh """
             ${ECS_SCRIPT} \
