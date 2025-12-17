@@ -32,7 +32,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:9001/actuator/health || exit 1
 
 # JVM options for containerized environment
-ENV JAVA_OPTS="-Xmx512m -Xms256m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+ENV JAVA_OPTS="-Xms256m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
 
 # Default Spring profile
 ENV SPRING_PROFILES_ACTIVE=aws-dev
