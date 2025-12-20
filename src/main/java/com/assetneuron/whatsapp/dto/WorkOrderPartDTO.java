@@ -3,8 +3,8 @@ package com.assetneuron.whatsapp.dto;
 import com.assetneuron.whatsapp.common.constant.ErrorMessages;
 import com.assetneuron.whatsapp.enums.WorkOrderPartStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,7 +29,7 @@ public class WorkOrderPartDTO {
 
     @JsonProperty(value = "quantity")
     @NotNull(message = ErrorMessages.VALIDATION_QUANTITY_REQUIRED)
-    @Positive(message = ErrorMessages.VALIDATION_QUANTITY_POSITIVE)
+    @DecimalMin(value = "0.001", message = ErrorMessages.VALIDATION_QUANTITY_POSITIVE)
     private BigDecimal quantity;
 
     private WorkOrderPartStatus status;
