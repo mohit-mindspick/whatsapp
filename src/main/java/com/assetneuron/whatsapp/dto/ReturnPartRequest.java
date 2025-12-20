@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Data
@@ -29,7 +30,7 @@ public class ReturnPartRequest {
     @JsonProperty(value = "quantity")
     @NotNull(message = ErrorMessages.VALIDATION_QUANTITY_REQUIRED)
     @Positive(message = ErrorMessages.VALIDATION_QUANTITY_POSITIVE)
-    private Integer quantity;
+    private BigDecimal quantity;
 
 }
 
