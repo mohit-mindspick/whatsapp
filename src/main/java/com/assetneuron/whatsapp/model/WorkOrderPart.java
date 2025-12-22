@@ -49,8 +49,8 @@ public class WorkOrderPart extends BaseEntity {
     @Column(name = "unit_price", precision = 10, scale = 2, nullable = false)
     private BigDecimal unitPrice;
 
-    @Column(name = "quantity", nullable = false)
-    private Integer quantity;
+    @Column(name = "quantity", nullable = false, precision = 15, scale = 3)
+    private BigDecimal quantity;
 
     @Column(name = "total_cost", precision = 10, scale = 2, nullable = false)
     private BigDecimal totalCost;
@@ -70,7 +70,7 @@ public class WorkOrderPart extends BaseEntity {
         updatedAt = LocalDateTime.now();
         // Calculate total cost if not already set
         if (totalCost == null && unitPrice != null && quantity != null) {
-            totalCost = unitPrice.multiply(BigDecimal.valueOf(quantity));
+            totalCost = unitPrice.multiply(quantity);
         }
     }
 
@@ -79,7 +79,7 @@ public class WorkOrderPart extends BaseEntity {
         updatedAt = LocalDateTime.now();
         // Recalculate total cost
         if (unitPrice != null && quantity != null) {
-            totalCost = unitPrice.multiply(BigDecimal.valueOf(quantity));
+            totalCost = unitPrice.multiply(quantity);
         }
     }
 }

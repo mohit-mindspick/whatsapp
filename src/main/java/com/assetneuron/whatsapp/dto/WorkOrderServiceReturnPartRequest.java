@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 /**
@@ -27,6 +28,6 @@ public class WorkOrderServiceReturnPartRequest {
     private String partName;
     
     @JsonProperty(value = "quantity")
-    private Integer quantity;
+    private BigDecimal quantity;
 }
 

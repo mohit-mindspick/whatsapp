@@ -36,6 +36,8 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authz -> authz
                         // Public endpoints - health checks
+                        .requestMatchers("/actuator").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/api/v1/whatsapp/health").permitAll()
                         // Swagger/OpenAPI endpoints
                         .requestMatchers(
