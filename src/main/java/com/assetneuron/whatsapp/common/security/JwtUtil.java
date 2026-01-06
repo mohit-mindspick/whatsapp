@@ -92,5 +92,19 @@ public class JwtUtil {
     public boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
+    
+    /**
+     * Extract session ID from token
+     * @param token the token
+     * @return the session ID, or null if not present
+     */
+    public String extractSessionId(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            return claims.get("sessionId", String.class);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }
 

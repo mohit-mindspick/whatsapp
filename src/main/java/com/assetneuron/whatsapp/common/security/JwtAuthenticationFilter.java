@@ -1,5 +1,9 @@
 package com.assetneuron.whatsapp.common.security;
 
+import com.assetneuron.whatsapp.common.model.TenantSettings;
+import com.assetneuron.whatsapp.common.model.UserSession;
+import com.assetneuron.whatsapp.common.service.TenantSettingsService;
+import com.assetneuron.whatsapp.common.service.UserSessionService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -25,6 +30,8 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final UserSessionService userSessionService;
+    private final TenantSettingsService tenantSettingsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, 
@@ -45,8 +52,63 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     io.jsonwebtoken.Claims claims = jwtUtil.extractAllClaims(token);
                     String username = claims.getSubject();
 
-                    // Extract tenant ID from JWT and validate/add to headers
+                    // Extract tenant ID from JWT first to check multiDeviceEnabled
                     String tenantId = jwtUtil.extractTenantId(token);
+                    
+                    // Check if multi-device is enabled for this tenant
+                    boolean multiDeviceEnabled = false;
+                    if (tenantId != null && !tenantId.isEmpty()) {
+                        try {
+                            UUID tenantUuid = UUID.fromString(tenantId);
+                            TenantSettings tenantSettings = tenantSettingsService.getTenantSettingsByTenantId(tenantUuid);
+                            if (tenantSettings != null) {
+                                multiDeviceEnabled = tenantSettings.getMultiDeviceEnabled() != null && tenantSettings.getMultiDeviceEnabled();
+                            }
+                        } catch (Exception e) {
+                            log.debug("Could not retrieve tenant settings for tenant: {}, defaulting to single device mode", tenantId, e);
+                        }
+                    }
+
+                    // Extract and validate session ID from JWT (skip if multiDeviceEnabled is true)
+                    if (!multiDeviceEnabled) {
+                        String sessionIdStr = jwtUtil.extractSessionId(token);
+                        if (sessionIdStr != null && !sessionIdStr.isEmpty()) {
+                            try {
+                                UUID sessionId = UUID.fromString(sessionIdStr);
+                                // Check if session exists and is active
+                                try {
+                                    UserSession userSession = userSessionService.getUserSessionBySessionId(sessionId);
+                                    if (!userSession.getActive()) {
+                                        log.warn("Session is not active for sessionId: {}", sessionId);
+                                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                                        response.setContentType("application/json");
+                                        response.getWriter().write("{\"error\":\"ERR_SESSION_NOT_FOUND\"}");
+                                        return;
+                                    }
+                                    log.debug("Session validated successfully for sessionId: {}", sessionId);
+                                } catch (RuntimeException e) {
+                                    if (e.getMessage() != null && e.getMessage().equals("ERR_SESSION_NOT_FOUND")) {
+                                        log.warn("Session not found for sessionId: {}", sessionId);
+                                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                                        response.setContentType("application/json");
+                                        response.getWriter().write("{\"error\":\"ERR_SESSION_NOT_FOUND\"}");
+                                        return;
+                                    }
+                                    throw e;
+                                }
+                            } catch (IllegalArgumentException e) {
+                                log.warn("Invalid sessionId format in token: {}", sessionIdStr);
+                                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                                response.setContentType("application/json");
+                                response.getWriter().write("{\"error\":\"ERR_SESSION_NOT_FOUND\"}");
+                                return;
+                            }
+                        }
+                    } else {
+                        log.debug("Multi-device enabled for tenant: {}, skipping session validation", tenantId);
+                    }
+                    
+                    // Validate/add tenant ID to headers
                     if (tenantId != null && !tenantId.isEmpty()) {
                         String existingTenantId = request.getHeader("X-Tenant-Id");
                         if (existingTenantId != null && !existingTenantId.isEmpty()) {
