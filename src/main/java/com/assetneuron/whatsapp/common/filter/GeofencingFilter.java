@@ -27,8 +27,8 @@ import java.util.*;
  * 2. Extracts "sites" claim from JWT token (contains geofencing information)
  * 3. If sites claim exists in token:
  *    - Requires coordinates from HTTP headers:
- *      - X-LATITUDE: Latitude coordinate (required if sites claim exists)
- *      - X-LONGITUDE: Longitude coordinate (required if sites claim exists)
+ *      - x-latitude or X-Latitude: Latitude coordinate (required if sites claim exists)
+ *      - x-longitude or X-Longitude: Longitude coordinate (required if sites claim exists)
  *    - Validates coordinates against sites from JWT token using geofence radius
  * 4. If sites claim does not exist, skips geofencing validation and proceeds with request
  * 
@@ -102,7 +102,7 @@ public class GeofencingFilter extends OncePerRequestFilter {
                 response.setCharacterEncoding("UTF-8");
                 
                 String errorResponse = String.format(
-                    "{\"error\":\"%s\",\"message\":\"User has role with geofencing enabled. X-LATITUDE and X-LONGITUDE headers are required\"}",
+                    "{\"error\":\"%s\",\"message\":\"User has role with geofencing enabled. x-latitude/X-Latitude and x-longitude/X-Longitude headers are required\"}",
                     ERR_GEOFENCE_COORDINATES_MISSING);
                 response.getWriter().write(errorResponse);
                 return;
@@ -325,13 +325,17 @@ public class GeofencingFilter extends OncePerRequestFilter {
     }
 
     /**
-     * Extract latitude from X-LATITUDE header.
+     * Extract latitude from x-latitude or X-Latitude header.
+     * Checks lowercase first, then camel case.
      * 
      * @param request HTTP request
      * @return Latitude value or null if not present/invalid
      */
     private Double extractLatitude(HttpServletRequest request) {
-        String latHeader = request.getHeader("X-LATITUDE");
+        String latHeader = request.getHeader("x-latitude");
+        if (latHeader == null || latHeader.isEmpty()) {
+            latHeader = request.getHeader("X-Latitude");
+        }
         if (latHeader == null || latHeader.isEmpty()) {
             return null;
         }
@@ -339,19 +343,23 @@ public class GeofencingFilter extends OncePerRequestFilter {
         try {
             return Double.parseDouble(latHeader.trim());
         } catch (NumberFormatException e) {
-            log.warn("Invalid latitude format in X-LATITUDE header: {}", latHeader);
+            log.warn("Invalid latitude format in latitude header: {}", latHeader);
             return null;
         }
     }
 
     /**
-     * Extract longitude from X-LONGITUDE header.
+     * Extract longitude from x-longitude or X-Longitude header.
+     * Checks lowercase first, then camel case.
      * 
      * @param request HTTP request
      * @return Longitude value or null if not present/invalid
      */
     private Double extractLongitude(HttpServletRequest request) {
-        String lonHeader = request.getHeader("X-LONGITUDE");
+        String lonHeader = request.getHeader("x-longitude");
+        if (lonHeader == null || lonHeader.isEmpty()) {
+            lonHeader = request.getHeader("X-Longitude");
+        }
         if (lonHeader == null || lonHeader.isEmpty()) {
             return null;
         }
@@ -359,7 +367,7 @@ public class GeofencingFilter extends OncePerRequestFilter {
         try {
             return Double.parseDouble(lonHeader.trim());
         } catch (NumberFormatException e) {
-            log.warn("Invalid longitude format in X-LONGITUDE header: {}", lonHeader);
+            log.warn("Invalid longitude format in longitude header: {}", lonHeader);
             return null;
         }
     }
