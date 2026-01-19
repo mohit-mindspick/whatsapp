@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Data
@@ -17,7 +18,7 @@ public class PartDTO {
     private UUID workOrderPartId;
     private UUID partId;
     private String partCode;
-    private Integer quantity;
+    private BigDecimal quantity;
     private WorkOrderPartStatus status;
 }
 

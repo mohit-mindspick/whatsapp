@@ -2,13 +2,14 @@ package com.assetneuron.whatsapp.dto;
 
 import com.assetneuron.whatsapp.enums.WorkOrderPartStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Data
@@ -24,9 +25,9 @@ public class WorkOrderServiceUpdateParts {
     @JsonProperty(value = "part_id")
     private UUID partId;
 
-    @Positive(message = "Quantity must be positive")
+    @DecimalMin(value = "0.001", message = "Quantity must be positive")
     @JsonProperty(value = "quantity")
-    private Integer quantity;
+    private BigDecimal quantity;
 
     @JsonProperty(value = "status")
     private WorkOrderPartStatus status;
