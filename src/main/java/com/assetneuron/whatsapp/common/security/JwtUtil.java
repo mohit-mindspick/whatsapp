@@ -59,7 +59,7 @@ public class JwtUtil {
             extractAllClaims(token);
             return true;
         } catch (JwtException e) {
-            log.debug("JWT Token Validation Failed. Exception: {}", e);
+            log.warn("JWT Token Validation Failed. Exception: {}", e);
             return false;
         }
     }
