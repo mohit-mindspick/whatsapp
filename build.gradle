@@ -43,30 +43,21 @@ dependencies {
 
     // AWS S3 SDK v2
     implementation 'software.amazon.awssdk:s3:2.21.29'
-    implementation 'software.amazon.awssdk:auth:2.21.29'
-    implementation 'software.amazon.awssdk:regions:2.21.29'
-
+    
     // MinIO SDK
     implementation 'io.minio:minio:8.5.7'
-
+    
     // SpringDoc OpenAPI (Swagger)
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
-
-    // JSON Processing for tags
-    implementation 'com.fasterxml.jackson.core:jackson-databind'
-
+    
     // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
-
+    
     // Testing
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
-    testImplementation 'org.mockito:mockito-core'
-    testImplementation 'org.mockito:mockito-junit-jupiter'
     testImplementation 'org.junit.jupiter:junit-jupiter'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api'
-    testImplementation 'org.junit.jupiter:junit-jupiter-engine'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 

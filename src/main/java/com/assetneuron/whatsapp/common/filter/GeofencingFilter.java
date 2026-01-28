@@ -230,7 +230,7 @@ public class GeofencingFilter extends OncePerRequestFilter {
                 Double radiusMetres = convertToDouble(radiusObj);
 
                 if (siteLatitude == null || siteLongitude == null || radiusMetres == null || radiusMetres <= 0) {
-                    log.debug("Invalid geofencing values for site, skipping");
+                    log.warn("Invalid geofencing values for site, skipping geofencing check");
                     continue;
                 }
 

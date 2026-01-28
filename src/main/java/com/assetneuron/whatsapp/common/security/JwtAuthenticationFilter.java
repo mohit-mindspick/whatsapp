@@ -65,7 +65,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                 multiDeviceEnabled = tenantSettings.getMultiDeviceEnabled() != null && tenantSettings.getMultiDeviceEnabled();
                             }
                         } catch (Exception e) {
-                            log.debug("Could not retrieve tenant settings for tenant: {}, defaulting to single device mode", tenantId, e);
+                            log.warn("Could not retrieve tenant settings for tenant: {}, defaulting to single device mode", tenantId, e);
                         }
                     }
 
@@ -156,7 +156,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     
                     log.debug("JWT authentication successful for user: {} with tenant: {}", username, tenantId);
                 } else {
-                    log.debug("Invalid JWT token provided");
+                    log.warn("Invalid JWT token provided");
                 }
             }
         } catch (Exception e) {
