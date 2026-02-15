@@ -20,9 +20,12 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -128,6 +131,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         }
                     }
 
+                    addAuthorizedSiteIdsHeader(token, request, requestWrapper);
+
                     // Extract roles and permissions from JWT claims
                     @SuppressWarnings("unchecked")
                     List<String> roles = claims.get("roles", List.class);
@@ -167,6 +172,35 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         
         // Continue with the filter chain using the wrapper
         filterChain.doFilter(requestWrapper, response);
+    }
+
+    /**
+     * Sets X-AUTHORIZED-SITE-IDS on the request: intersection of token siteIds and request X-SITE-ID (if present).
+     * If X-SITE-ID is not present, uses all site IDs from the token (comma separated).
+     */
+    private void addAuthorizedSiteIdsHeader(String token, HttpServletRequest request, TenantHeaderRequestWrapper requestWrapper) {
+        List<String> tokenSiteIds = jwtUtil.extractSiteIds(token);
+        if (tokenSiteIds == null || tokenSiteIds.isEmpty()) {
+            return;
+        }
+        String requestSiteIdsHeader = request.getHeader("X-SITE-ID");
+        String authorizedSiteIdsValue;
+        if (requestSiteIdsHeader == null || requestSiteIdsHeader.trim().isEmpty()) {
+            authorizedSiteIdsValue = String.join(",", tokenSiteIds);
+            log.debug("X-AUTHORIZED-SITE-IDS set from token (no request header): {}", authorizedSiteIdsValue);
+        } else {
+            Set<String> tokenSiteSet = tokenSiteIds.stream().map(String::trim).collect(Collectors.toSet());
+            List<String> requestSiteIds = Arrays.stream(requestSiteIdsHeader.split(","))
+                    .map(String::trim)
+                    .filter(id -> !id.isEmpty())
+                    .collect(Collectors.toList());
+            List<String> intersection = requestSiteIds.stream()
+                    .filter(tokenSiteSet::contains)
+                    .collect(Collectors.toList());
+            authorizedSiteIdsValue = String.join(",", intersection);
+            log.debug("X-AUTHORIZED-SITE-IDS set as intersection of token and request X-SITE-ID: {}", authorizedSiteIdsValue);
+        }
+        requestWrapper.addHeader("X-AUTHORIZED-SITE-IDS", authorizedSiteIdsValue);
     }
 
     @Override

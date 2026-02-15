@@ -106,5 +106,31 @@ public class JwtUtil {
             return null;
         }
     }
+
+    /**
+     * Extract site IDs from token (authorized sites for the user under the tenant).
+     * @param token the token
+     * @return list of site IDs, or null/empty if not present
+     */
+    @SuppressWarnings("unchecked")
+    public List<String> extractSiteIds(String token) {
+        try {
+            Claims claims = extractAllClaims(token);
+            Object siteIdsObj = claims.get("siteIds");
+            if (siteIdsObj instanceof List) {
+                List<?> list = (List<?>) siteIdsObj;
+                List<String> result = new ArrayList<>();
+                for (Object item : list) {
+                    if (item != null) {
+                        result.add(item.toString().trim());
+                    }
+                }
+                return result.isEmpty() ? null : result;
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }
 
