@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,7 @@ public class KafkaTopicConfig {
     private int replicas;
         
     @Bean
+    @ConditionalOnProperty(name = "event.publisher.type", havingValue = "KAFKA")
     public NewTopic whatsappEventsTopicBean() {
         log.info("Creating Kafka topic: {} with {} partitions and {} replicas", 
                 whatsappEventsTopic, partitions, replicas);
